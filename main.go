@@ -40,9 +40,18 @@ func postTransaction(c *gin.Context) {
 
 	resp, err := http.Post(initialize.FireflyAddress, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to post transaction: %v", resp.StatusCode)})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to post transaction: %v", err)})
+		defer resp.Body.Close()
+		return
+	} else if resp.StatusCode != http.StatusOK {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to post transaction: Firefly API returned %v", resp.StatusCode)})
+		defer resp.Body.Close()
 		return
 	}
+	c.JSON(http.StatusOK, gin.H{"message": "Message Parsed and posted successfully"})
+	defer resp.Body.Close()
+	return
+
 }
 
 func main() {

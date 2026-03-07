@@ -1,6 +1,10 @@
 package parser
 
-import "firefly-iii-transaction-relay/initialize"
+import (
+	"firefly-iii-transaction-relay/initialize"
+	"strings"
+	"time"
+)
 
 type Transaction struct {
 	Type     string `json:"type"`
@@ -20,19 +24,22 @@ func ParseMessage(msg string) Transaction {
 	}
 
 	if matches := initialize.DateRegex.FindStringSubmatch(msg); len(matches) > 1 {
-		transaction.Date = matches[1]
+		t, err := time.Parse(matches[1], t)
+		if err != nil {
+			transaction.Date = t.Format("")
+		}
 	}
 
 	if matches := initialize.AmountRegex.FindStringSubmatch(msg); len(matches) > 1 {
-		transaction.Amount = matches[1]
+		transaction.Amount = strings.TrimSpace(matches[1])
 	}
 
 	if matches := initialize.CurrencyRegex.FindStringSubmatch(msg); len(matches) > 1 {
-		transaction.Currency = matches[1]
+		transaction.Currency = strings.TrimSpace(matches[1])
 	}
 
 	if matches := initialize.VendorRegex.FindStringSubmatch(msg); len(matches) > 1 {
-		transaction.Vendor = matches[1]
+		transaction.Vendor = strings.TrimSpace(matches[1])
 	}
 
 	return transaction
