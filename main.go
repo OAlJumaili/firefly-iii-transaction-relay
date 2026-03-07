@@ -6,10 +6,14 @@ import (
 	"firefly-iii-transaction-relay/initialize"
 	"firefly-iii-transaction-relay/parser"
 	"fmt"
+	"io"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
+
+var httpClient = &http.Client{}
 
 type Request struct {
 	AuthKey string `json:"auth_key"`
@@ -30,26 +34,42 @@ func postTransaction(c *gin.Context) {
 	}
 
 	msg := req.Message
+	msg = strings.ReplaceAll(msg, "\n", " ")
 	transaction := parser.ParseMessage(msg)
 
-	jsonData, err := json.Marshal(transaction)
+	payload := map[string]interface{}{
+		"transactions": []parser.Transaction{transaction},
+	}
+	jsonData, err := json.Marshal(payload)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	resp, err := http.Post(initialize.FireflyAddress, "application/json", bytes.NewBuffer(jsonData))
+	// c.JSON(http.StatusOK, gin.H{"message": "Message Parsed successfully", "transaction": transaction})
+
+	request, err := http.NewRequest("POST", fmt.Sprintf("%s/v1/transactions", initialize.FireflyAddress), bytes.NewBuffer(jsonData))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to Compose HTTP Request: %v", err)})
+		return
+	}
+	request.Header.Set("Authorization", "Bearer "+initialize.FireflyPAT)
+	request.Header.Set("Content-Type", "application/json")
+
+	resp, err := httpClient.Do(request)
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to post transaction: %v", err)})
-		defer resp.Body.Close()
 		return
-	} else if resp.StatusCode != http.StatusOK {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to post transaction: Firefly API returned %v", resp.StatusCode)})
-		defer resp.Body.Close()
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 300 {
+		body, _ := io.ReadAll(resp.Body)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to post transaction: Firefly API returned %v:%v", resp.StatusCode, string(body))})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Message Parsed and posted successfully"})
-	defer resp.Body.Close()
 	return
 
 }
