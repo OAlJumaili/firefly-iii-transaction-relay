@@ -1,4 +1,4 @@
-package initialize
+package core
 
 import (
 	"fmt"
@@ -10,14 +10,16 @@ import (
 var ListenAddress string
 var FireflyAddress string
 var FireflyPAT string
+var FireflyAccount string
+var FireflyBudget string
 var AuthKey string
 var WithdrawalKeys []string
 var DepositKeys []string
 var VendorKeys []string
 var DateKeys []string
 var AmountKeys []string
-var CurrencyMap map[string]string
 var DateFormats []string
+var CurrencyMap map[string]string
 
 var WithdrawRegex *regexp.Regexp
 var DepositRegex *regexp.Regexp
@@ -30,6 +32,8 @@ func InitEnv() {
 	ListenAddress = os.Getenv("LISTEN_ADDRESS")
 	FireflyAddress = os.Getenv("FIREFLY_ADDRESS")
 	FireflyPAT = os.Getenv("FIREFLY_PAT")
+	FireflyAccount = os.Getenv("FIREFLY_ACCOUNT")
+	FireflyBudget = os.Getenv("FIREFLY_BUDGET")
 	AuthKey = os.Getenv("AUTH_KEY")
 	WithdrawalKeys = strings.Split(os.Getenv("WITHDRAWAL_KEYS"), ",")
 	DepositKeys = strings.Split(os.Getenv("DEPOSIT_KEYS"), ",")
@@ -70,6 +74,7 @@ func InitRegex() {
 	CurrencyRegex = regexp.MustCompile(fmt.Sprintf(`(?i)(%s)`, currencyPattern))
 	AmountRegex = regexp.MustCompile(fmt.Sprintf(`(?i)(%s)[:\s]*(\d+(?:\.\d+)?)`, amountPattern))
 	DateRegex = regexp.MustCompile(fmt.Sprintf(`(?i)(%s)[:\s]*([\d/\-:\s]+(?:AM|PM)?)`, datePattern))
+
 	VendorRegex = regexp.MustCompile(
 		fmt.Sprintf(`(?i)%s[:\s]*([^\n]+?)(?:\s+(?:%s|%s|%s|%s|%s)|$)`,
 			vendorPattern,

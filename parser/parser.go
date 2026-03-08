@@ -1,7 +1,8 @@
 package parser
 
 import (
-	"firefly-iii-transaction-relay/initialize"
+	"firefly-iii-transaction-relay/core"
+	"fmt"
 	"strings"
 	"time"
 )
@@ -9,8 +10,10 @@ import (
 type Transaction struct {
 	Type         string  `json:"type"`
 	Date         string  `json:"date"`
+	Description  string  `json:"description"`
 	Amount       string  `json:"amount"`
 	Currency     string  `json:"currency_code"`
+	Budget       string  `json:"budget_name"`
 	SourceVendor *string `json:"source_name,omitempty"`
 	DestVendor   *string `json:"destination_name,omitempty"`
 }
@@ -18,14 +21,14 @@ type Transaction struct {
 func ParseMessage(msg string) Transaction {
 	var transaction Transaction
 
-	if initialize.WithdrawRegex.MatchString(msg) {
+	if core.WithdrawRegex.MatchString(msg) {
 		transaction.Type = "withdrawal"
-	} else if initialize.DepositRegex.MatchString(msg) {
+	} else if core.DepositRegex.MatchString(msg) {
 		transaction.Type = "deposit"
 	}
 
-	if matches := initialize.DateRegex.FindStringSubmatch(msg); len(matches) > 2 {
-		for _, fmt := range initialize.DateFormats {
+	if matches := core.DateRegex.FindStringSubmatch(msg); len(matches) > 2 {
+		for _, fmt := range core.DateFormats {
 			t, err := time.Parse(fmt, matches[2])
 			if err == nil {
 				transaction.Date = t.Format(time.RFC3339)
@@ -34,25 +37,30 @@ func ParseMessage(msg string) Transaction {
 		}
 	}
 
-	if matches := initialize.AmountRegex.FindStringSubmatch(msg); len(matches) > 1 {
+	if matches := core.AmountRegex.FindStringSubmatch(msg); len(matches) > 1 {
 		transaction.Amount = strings.TrimSpace(matches[2])
 	}
 
-	if matches := initialize.CurrencyRegex.FindStringSubmatch(msg); len(matches) > 1 {
+	if matches := core.CurrencyRegex.FindStringSubmatch(msg); len(matches) > 1 {
 		key := strings.TrimSpace(matches[1])
-		if code, ok := initialize.CurrencyMap[key]; ok {
+		if code, ok := core.CurrencyMap[key]; ok {
 			transaction.Currency = code
 		}
 	}
 
-	if matches := initialize.VendorRegex.FindStringSubmatch(msg); len(matches) > 1 {
+	if matches := core.VendorRegex.FindStringSubmatch(msg); len(matches) > 1 {
 		vendor := strings.TrimSpace(matches[1])
 		if transaction.Type == "withdrawal" {
 			transaction.DestVendor = &vendor
+			transaction.Description = fmt.Sprintf("Automated Imported Transaction For %s, %s", *transaction.DestVendor, transaction.Date)
+			transaction.SourceVendor = &core.FireflyAccount
 		} else if transaction.Type == "deposit" {
+			transaction.DestVendor = &core.FireflyAccount
 			transaction.SourceVendor = &vendor
+			transaction.Description = fmt.Sprintf("Automated Imported Transaction For %s, %s", *transaction.SourceVendor, transaction.Date)
 		}
 	}
+	transaction.Budget = core.FireflyBudget
 
 	return transaction
 }
