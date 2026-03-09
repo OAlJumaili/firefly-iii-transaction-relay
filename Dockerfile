@@ -4,7 +4,7 @@ WORKDIR /app
 COPY go.sum go.mod ./
 RUN go mod download
 
-COPY core/* parse/* web/* *.go ./
+COPY . .
 RUN RUN CGO_ENABLED=0 GOOS=linux go build -o ./firefly-relay
 
 EXPOSE 8080
