@@ -26,12 +26,14 @@ The next variables are key phrases used to generate the RegEx queries. All are l
 - `CURRENCY_MAP`: A comma seperated list, each element should be in the form of '<KEY PHRASE>:<CODE>', i.e. 'Dollar:USD'
 - `AMOUNT_KEYS`: Key phrases that indicate the transcation amount afterwards. Detects a number with optional decimals afterr the key phrase.
 - `DATE_KEYS`: Key phrases that indicate a date afterwards, i.e. 'On Date'. This is used in conjunction with `DATE_FORMATS` to grab the date afer the key phrase and validate it with the format. 
-- `DATE_FORMATS`: List of **[Go Compatible](https://www.geeksforgeeks.org/go-language/time-formatting-in-golang/)** Date formats that can appear in your sms messages. this is used to validate dates captured with `DATE_KEYS`, i.e. '2006/01/02 03:04 PM'
+- `DATE_FORMATS`: List of Go Compatible Date formats that can appear in your sms messages. this is used to validate dates captured with `DATE_KEYS`, i.e. '2006/01/02 03:04 PM'
 - `VENDOR_KEYS`: Key phrases to indicate the transaction's other party afterwards. This pattern will capture everything until it detects one of the other keywords, i.e 'From Vendor', 'To Account'
 ```
 
+For clarification on Go compatible date formats, see [this link](https://www.geeksforgeeks.org/go-language/time-formatting-in-golang/).
+
 ### Docker
-`docker run -p 8080:8080 judexgrim/firefly-iii-transaction-relay:latest --env-file ./.env`
+```docker run -p 8080:8080 judexgrim/firefly-iii-transaction-relay:latest --env-file ./.env ```
 
 ### Executable
 Download the executable suitable for your machine's architecture from the latest release, and run it.
