@@ -11,8 +11,9 @@ import (
 )
 
 type Request struct {
-	AuthKey string `json:"auth_key"`
-	Message string `json:"message"`
+	AuthKey         string `json:"auth_key"`
+	Message         string `json:"message"`
+	VerificationKey string `json:"verification_key"`
 }
 
 func postTransaction(c *gin.Context) {
@@ -23,8 +24,8 @@ func postTransaction(c *gin.Context) {
 		return
 	}
 
-	if req.AuthKey != core.AuthKey {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid auth key"})
+	if req.AuthKey != core.AuthKey || req.VerificationKey != core.VerificationKey {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "One or more authentication keys are invalid."})
 		return
 	}
 

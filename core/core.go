@@ -21,6 +21,7 @@ var AmountKeys []string
 var DateFormats []string
 var BlacklistKeys []string
 var CurrencyMap map[string]string
+var VerificationKey string
 
 var WithdrawRegex *regexp.Regexp
 var DepositRegex *regexp.Regexp
@@ -35,6 +36,7 @@ func InitEnv() {
 	FireflyAddress = os.Getenv("FIREFLY_ADDRESS")
 	FireflyPAT = os.Getenv("FIREFLY_PAT")
 	FireflyAccount = os.Getenv("FIREFLY_ACCOUNT")
+	VerificationKey = os.Getenv("VERIFICATION_KEY")
 	FireflyBudget = os.Getenv("FIREFLY_BUDGET")
 	AuthKey = os.Getenv("AUTH_KEY")
 	WithdrawalKeys = strings.Split(os.Getenv("WITHDRAWAL_KEYS"), ",")
