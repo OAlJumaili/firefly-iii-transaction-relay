@@ -30,13 +30,18 @@ func postTransaction(c *gin.Context) {
 
 	msg := req.Message
 	msg = strings.ReplaceAll(msg, "\n", " ")
-	transaction := parser.ParseMessage(msg)
+	transaction, blacklisted := parser.ParseMessage(msg)
+	if blacklisted {
+		c.JSON(http.StatusOK, gin.H{"message": "Blacklisted Keyword Detected, Skipping."})
+		return
+	}
 	web.PostTransaction(transaction, c)
 }
 
 func main() {
 	core.InitEnv()
 	core.InitRegex()
+	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 	router.POST("/transaction", postTransaction)
 	router.Run(core.ListenAddress)

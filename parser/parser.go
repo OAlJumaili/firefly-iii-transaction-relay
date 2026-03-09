@@ -18,8 +18,12 @@ type Transaction struct {
 	DestVendor   *string `json:"destination_name,omitempty"`
 }
 
-func ParseMessage(msg string) Transaction {
+func ParseMessage(msg string) (Transaction, bool) {
 	var transaction Transaction
+
+	if core.BlacklistRegex.MatchString(msg) {
+		return transaction, true
+	}
 
 	if core.WithdrawRegex.MatchString(msg) {
 		transaction.Type = "withdrawal"
@@ -62,5 +66,5 @@ func ParseMessage(msg string) Transaction {
 	}
 	transaction.Budget = core.FireflyBudget
 
-	return transaction
+	return transaction, false
 }

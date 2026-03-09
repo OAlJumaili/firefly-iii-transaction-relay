@@ -19,6 +19,7 @@ var VendorKeys []string
 var DateKeys []string
 var AmountKeys []string
 var DateFormats []string
+var BlacklistKeys []string
 var CurrencyMap map[string]string
 
 var WithdrawRegex *regexp.Regexp
@@ -27,6 +28,7 @@ var CurrencyRegex *regexp.Regexp
 var AmountRegex *regexp.Regexp
 var DateRegex *regexp.Regexp
 var VendorRegex *regexp.Regexp
+var BlacklistRegex *regexp.Regexp
 
 func InitEnv() {
 	ListenAddress = os.Getenv("LISTEN_ADDRESS")
@@ -40,6 +42,7 @@ func InitEnv() {
 	VendorKeys = strings.Split(os.Getenv("VENDOR_KEYS"), ",")
 	DateKeys = strings.Split(os.Getenv("DATE_KEYS"), ",")
 	AmountKeys = strings.Split(os.Getenv("AMOUNT_KEYS"), ",")
+	BlacklistKeys = strings.Split(os.Getenv("BLACKLIST_KEYS"), ",")
 	DateFormats = strings.Split(os.Getenv("DATE_FORMATS"), ",")
 
 	currencyMap := os.Getenv("CURRENCY_MAP")
@@ -62,6 +65,7 @@ func InitRegex() {
 	amountPattern := strings.Join(AmountKeys, "|")
 	datePattern := strings.Join(DateKeys, "|")
 	vendorPattern := strings.Join(VendorKeys, "|")
+	blacklistPattern := strings.Join(BlacklistKeys, "|")
 
 	keys := make([]string, 0, len(CurrencyMap))
 	for k := range CurrencyMap {
@@ -74,6 +78,7 @@ func InitRegex() {
 	CurrencyRegex = regexp.MustCompile(fmt.Sprintf(`(?i)(%s)`, currencyPattern))
 	AmountRegex = regexp.MustCompile(fmt.Sprintf(`(?i)(%s)[:\s]*(\d+(?:\.\d+)?)`, amountPattern))
 	DateRegex = regexp.MustCompile(fmt.Sprintf(`(?i)(%s)[:\s]*([\d/\-:\s]+(?:AM|PM)?)`, datePattern))
+	BlacklistRegex = regexp.MustCompile(fmt.Sprintf(`(?i)(%s)`, blacklistPattern))
 
 	VendorRegex = regexp.MustCompile(
 		fmt.Sprintf(`(?i)%s[:\s]*([^\n]+?)(?:\s+(?:%s|%s|%s|%s|%s)|$)`,
