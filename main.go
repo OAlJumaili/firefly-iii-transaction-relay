@@ -4,6 +4,7 @@ import (
 	"firefly-iii-transaction-relay/core"
 	"firefly-iii-transaction-relay/parser"
 	"firefly-iii-transaction-relay/web"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -45,5 +46,6 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 	router.POST("/transaction", postTransaction)
+	fmt.Println(`HTTP Listening and serving traffic on`, core.ListenAddress)
 	router.Run(core.ListenAddress)
 }
