@@ -34,7 +34,7 @@ The next variables are key phrases used to generate the RegEx queries. All are l
 For clarification on Go compatible date formats, see [this link](https://www.geeksforgeeks.org/go-language/time-formatting-in-golang/).
 
 ### Docker
-```docker run -p 8080:8080 judexgrim/firefly-iii-transaction-relay:latest --env-file ./.env ```
+```docker run -p 8080:8080 oaljumaili/firefly-iii-transaction-relay:latest --env-file ./.env ```
 
 ### Executable
 Download the executable suitable for your machine's architecture from the latest release, and run it.
