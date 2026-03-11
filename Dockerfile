@@ -1,4 +1,4 @@
-FROM dhi.io/golang:1.26-alpine3.23-sfw-ent-dev
+FROM dhi.io/golang:1
 WORKDIR /app
 
 COPY go.sum go.mod ./
