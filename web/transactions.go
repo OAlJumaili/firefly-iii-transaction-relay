@@ -8,13 +8,36 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
 var httpClient = &http.Client{}
 
-func PostTransaction(transaction parser.Transaction, c *gin.Context) {
+func ProcessTransaction(c *gin.Context) {
+	var req TransactionRequest
+
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if req.VerificationKey != core.VerificationKey {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Verification key is invalid."})
+		return
+	}
+
+	msg := strings.ReplaceAll(req.Message, "\n", " ")
+	transaction, blacklisted := parser.ParseMessage(msg)
+	if blacklisted {
+		c.JSON(http.StatusOK, gin.H{"message": "Blacklisted Keyword Detected, Skipping."})
+		return
+	}
+	SendTransaction(transaction, c)
+}
+
+func SendTransaction(transaction parser.Transaction, c *gin.Context) {
 	payload := map[string]interface{}{
 		"transactions": []parser.Transaction{transaction},
 	}

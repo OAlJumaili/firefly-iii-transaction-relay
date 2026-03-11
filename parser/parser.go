@@ -25,6 +25,8 @@ func ParseMessage(msg string) (Transaction, bool) {
 		return transaction, true
 	}
 
+	transaction.Budget = core.FireflyBudget
+
 	if core.WithdrawRegex.MatchString(msg) {
 		transaction.Type = "withdrawal"
 	} else if core.DepositRegex.MatchString(msg) {
@@ -52,19 +54,20 @@ func ParseMessage(msg string) (Transaction, bool) {
 		}
 	}
 
-	if matches := core.VendorRegex.FindStringSubmatch(msg); len(matches) > 1 {
-		vendor := strings.TrimSpace(matches[1])
-		if transaction.Type == "withdrawal" {
-			transaction.DestVendor = &vendor
-			transaction.Description = fmt.Sprintf("Automated Imported Transaction For %s, %s", *transaction.DestVendor, transaction.Date)
+	if transaction.Type == "withdrawal" {
+		if matches := core.WithdrawalVendorRegex.FindStringSubmatch(msg); len(matches) > 1 {
+			vendor := strings.TrimSpace(matches[1])
 			transaction.SourceVendor = &core.FireflyAccount
-		} else if transaction.Type == "deposit" {
-			transaction.DestVendor = &core.FireflyAccount
-			transaction.SourceVendor = &vendor
+			transaction.DestVendor = &vendor
 			transaction.Description = fmt.Sprintf("Automated Imported Transaction For %s, %s", *transaction.SourceVendor, transaction.Date)
 		}
+	} else if transaction.Type == "deposit" {
+		if matches := core.DepositVendorRegex.FindStringSubmatch(msg); len(matches) > 1 {
+			vendor := strings.TrimSpace(matches[1])
+			transaction.DestVendor = &core.FireflyAccount
+			transaction.SourceVendor = &vendor
+			transaction.Description = fmt.Sprintf("Automated Imported Transaction For %s, %s", *transaction.DestVendor, transaction.Date)
+		}
 	}
-	transaction.Budget = core.FireflyBudget
-
 	return transaction, false
 }

@@ -26,8 +26,9 @@ The next variables are key phrases used to generate the RegEx queries. All are l
 - `CURRENCY_MAP`: A comma seperated list, each element should be in the form of '<KEY PHRASE>:<CODE>', i.e. 'Dollar:USD'
 - `AMOUNT_KEYS`: Key phrases that indicate the transcation amount afterwards. Detects a number with optional decimals afterr the key phrase.
 - `DATE_KEYS`: Key phrases that indicate a date afterwards, i.e. 'On Date'. This is used in conjunction with `DATE_FORMATS` to grab the date afer the key phrase and validate it with the format. 
-- `DATE_FORMATS`: List of Go Compatible Date formats that can appear in your sms messages. this is used to validate dates captured with `DATE_KEYS`, i.e. '2006/01/02 03:04 PM'
-- `VENDOR_KEYS`: Key phrases to indicate the transaction's other party afterwards. This pattern will capture everything until it detects one of the other keywords, i.e 'From Vendor', 'To Account'
+- `DATE_FORMATS`: List of Go Compatible Date formats that can appear in your sms messages. this is used to validate dates captured with `DATE_KEYS`, i.e. '2006/01/02 03:04 PM'.
+- `WITHDRAWAL_VENDOR_KEYS`: Key phrases to indicate the transaction's other party afterwards. This pattern will capture everything until it detects one of the other keywords, i.e 'From Vendor', 'To Account'. This pattern is used when the transaction's type is detemined to be a withdrawal.
+- `DEPOSIT_VENDOR_KEYS`: Key phrases to indicate the transaction's other party afterwards. This pattern will capture everything until it detects one of the other keywords, i.e 'From Vendor', 'To Account'. This pattern is used when the transaction's type is detemined to be a deposit.
 ```
 
 For clarification on Go compatible date formats, see [this link](https://www.geeksforgeeks.org/go-language/time-formatting-in-golang/).
@@ -38,3 +39,25 @@ For clarification on Go compatible date formats, see [this link](https://www.gee
 ### Executable
 Download the executable suitable for your machine's architecture from the latest release, and run it.
 
+# Usage
+- First, you have a `/health` endpoint you can send a `GET` requestto, whcih will return a `200` when the relay is ready.
+
+- To use the relay, you will first need to create a session variable by sending a `POST` request to the `/auth` endpoint, containing a `JSON` body that looks like this:
+
+```json
+{
+  "auth_key": "<KEY>"
+}
+```
+This will return a token, which needs to be used as an `Authorization` Header in this form: `bearer <TOKEN>`.
+
+- afterwards, you can send a `POST` request to, with the `Authorization` Header and a `JSON` body that looks like this:
+
+```json
+{
+  "verification_key": "<KEY>",
+  "message": "<MESSAGE>"
+}
+```
+
+- Given you configure your key environments variables appropriately, the relay will then parse the message, extract the needed details, form a valid transaction `JSON` body to send to the Firefly III API.
