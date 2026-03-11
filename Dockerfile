@@ -1,7 +1,6 @@
 FROM dhi.io/golang:1.26-alpine3.23-sfw-ent-dev
 WORKDIR /app
 
-ENV SOCKET_DISABLE=true
 COPY go.sum go.mod ./
 RUN go mod download
 
