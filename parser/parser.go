@@ -2,7 +2,6 @@ package parser
 
 import (
 	"firefly-iii-transaction-relay/core"
-	"fmt"
 	"strings"
 	"time"
 )
@@ -59,14 +58,14 @@ func ParseMessage(msg string) (Transaction, bool) {
 			vendor := strings.TrimSpace(matches[1])
 			transaction.SourceVendor = &core.FireflyAccount
 			transaction.DestVendor = &vendor
-			transaction.Description = fmt.Sprintf("Automated Imported Transaction For %s, %s", *transaction.SourceVendor, transaction.Date)
+			transaction.Description = msg
 		}
 	} else if transaction.Type == "deposit" {
 		if matches := core.DepositVendorRegex.FindStringSubmatch(msg); len(matches) > 1 {
 			vendor := strings.TrimSpace(matches[1])
 			transaction.DestVendor = &core.FireflyAccount
 			transaction.SourceVendor = &vendor
-			transaction.Description = fmt.Sprintf("Automated Imported Transaction For %s, %s", *transaction.DestVendor, transaction.Date)
+			transaction.Description = msg
 		}
 	}
 	return transaction, false
